@@ -8,10 +8,19 @@ if [[ "${EUID}" -ne 0 ]]; then
 fi
 
 INSTALL_SKEL_DESKTOP=0
+SKIP_DEPS=0
+
 for arg in "$@"; do
   case "${arg}" in
     --skel-desktop)
       INSTALL_SKEL_DESKTOP=1
+      ;;
+    --no-deps|--skip-deps)
+      SKIP_DEPS=1
+      ;;
+    -h|--help)
+      echo "使い方: sudo $0 [--skel-desktop] [--no-deps]"
+      exit 0
       ;;
     *)
       echo "不明なオプション: ${arg}"
@@ -19,6 +28,74 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+install_dependencies() {
+  if [[ "${SKIP_DEPS}" -eq 1 ]]; then
+    echo "[依存関係] --no-deps が指定されたためスキップします。"
+    return 0
+  fi
+
+  if [[ ! -r /etc/os-release ]]; then
+    echo "警告: /etc/os-release が見つかりません。依存関係の自動インストールをスキップします。"
+    return 0
+  fi
+
+  # shellcheck disable=SC1091
+  . /etc/os-release
+
+  local distro_id="${ID:-unknown}"
+  local distro_like="${ID_LIKE:-}"
+  local match_tokens=" ${distro_id} ${distro_like} "
+
+  echo "[0/4] ディストリビューション (${PRETTY_NAME:-${distro_id}}) の依存関係をインストール中..."
+
+  if [[ "${match_tokens}" == *" ubuntu "* || "${match_tokens}" == *" debian "* || "${match_tokens}" == *" linuxmint "* || "${match_tokens}" == *" pop "* ]]; then
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -y
+    apt-get install -y --no-install-recommends \
+      python3 \
+      python3-gi \
+      gir1.2-gtk-4.0 \
+      libgtk-4-1 \
+      desktop-file-utils \
+      libgtk-4-bin
+
+  elif [[ "${match_tokens}" == *" fedora "* || "${match_tokens}" == *" rhel "* || "${match_tokens}" == *" centos "* || "${match_tokens}" == *" rocky "* || "${match_tokens}" == *" almalinux "* ]]; then
+    dnf install -y \
+      python3 \
+      python3-gobject \
+      gtk4 \
+      desktop-file-utils
+
+  elif [[ "${match_tokens}" == *" opensuse-leap "* || "${match_tokens}" == *" opensuse-tumbleweed "* || "${match_tokens}" == *" suse "* ]]; then
+    zypper --non-interactive refresh
+    zypper --non-interactive install --no-recommends \
+      python3 \
+      python3-gobject \
+      python3-gobject-Gdk \
+      typelib-1_0-Gtk-4_0 \
+      libgtk-4-1 \
+      desktop-file-utils
+
+  elif [[ "${match_tokens}" == *" arch "* || "${match_tokens}" == *" manjaro "* || "${match_tokens}" == *" endeavour"* ]]; then
+    pacman -Sy --noconfirm --needed \
+      python \
+      python-gobject \
+      gtk4 \
+      desktop-file-utils
+
+  elif [[ "${match_tokens}" == *" alpine "* ]]; then
+    apk update
+    apk add --no-cache \
+      python3 \
+      py3-gobject3 \
+      gtk4.0 \
+      desktop-file-utils
+
+  else
+    echo "警告: 未対応のディストリビューション (${distro_id}) です。GTK4 と PyGObject を手動でインストールしてください。"
+  fi
+}
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -30,6 +107,8 @@ ICON_DIR="/usr/local/share/icons/hicolor/scalable/apps"
 APPS_DIR="/usr/local/share/applications"
 DESKTOP_SRC="${SCRIPT_DIR}/${APP_ID}.desktop"
 ICON_SRC="${SCRIPT_DIR}/ipmsg-gtk4.svg"
+
+install_dependencies
 
 echo "[1/4] アプリケーションファイルを ${APP_DIR} へ配置中..."
 rm -rf "${APP_DIR}"

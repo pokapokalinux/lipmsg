@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=IP Messenger (GTK4)
+Comment=LAN messenger compatible with IP Messenger
+Exec=ipmsg-gtk4
+Icon=org.example.IpmsgLinuxGtk4
+Terminal=false
+Categories=Network;InstantMessaging;
+StartupNotify=true

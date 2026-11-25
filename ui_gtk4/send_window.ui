@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="IpmsgSendWindow" parent="GtkApplicationWindow">
+    <property name="title">Linux IP Messenger</property>
+    <property name="default-width">560</property>
+    <property name="default-height">520</property>
+    <child>
+      <object class="GtkBox" id="root_box">
+        <property name="orientation">vertical</property>
+        <property name="spacing">8</property>
+        <property name="margin-top">8</property>
+        <property name="margin-bottom">10</property>
+        <property name="margin-start">10</property>
+        <property name="margin-end">10</property>
+
+        <child>
+          <object class="GtkBox" id="top_bar">
+            <property name="orientation">horizontal</property>
+            <property name="spacing">8</property>
+            <style>
+              <class name="ipmsg-header-bar"/>
+            </style>
+            <child>
+              <object class="GtkLabel" id="peer_count_label">
+                <property name="label">ユーザ数: 0</property>
+                <property name="xalign">0</property>
+                <property name="hexpand">True</property>
+                <style>
+                  <class name="ipmsg-section-label"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkToggleButton" id="absence_toggle">
+                <property name="label">不在</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="refresh_button">
+                <property name="label">更新</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="history_button">
+                <property name="label">履歴</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="settings_button">
+                <property name="label">設定</property>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkLabel">
+            <property name="label">送信先一覧</property>
+            <property name="xalign">0</property>
+            <style>
+              <class name="ipmsg-section-label"/>
+            </style>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="vexpand">True</property>
+            <property name="min-content-height">140</property>
+            <property name="has-frame">True</property>
+            <child>
+              <object class="GtkColumnView" id="peer_column_view">
+                <property name="vexpand">True</property>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkBox" id="attach_bar">
+            <property name="orientation">horizontal</property>
+            <property name="spacing">8</property>
+            <child>
+              <object class="GtkButton" id="attach_button">
+                <property name="label">ファイル添付</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="clear_attach_button">
+                <property name="label">添付クリア</property>
+                <property name="sensitive">False</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="attach_summary_label">
+                <property name="label">添付なし</property>
+                <property name="xalign">0</property>
+                <property name="hexpand">True</property>
+                <property name="ellipsize">end</property>
+                <style>
+                  <class name="ipmsg-status-label"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkLabel">
+            <property name="label">メッセージ本文</property>
+            <property name="xalign">0</property>
+            <style>
+              <class name="ipmsg-section-label"/>
+            </style>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="vexpand">True</property>
+            <property name="min-content-height">120</property>
+            <property name="has-frame">True</property>
+            <child>
+              <object class="GtkTextView" id="message_text_view">
+                <property name="wrap-mode">word-char</property>
+                <property name="vexpand">True</property>
+                <style>
+                  <class name="ipmsg-message-view"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkBox" id="bottom_bar">
+            <property name="orientation">horizontal</property>
+            <property name="spacing">10</property>
+            <child>
+              <object class="GtkCheckButton" id="secret_check">
+                <property name="label">封書</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="status_label">
+                <property name="label">待機中</property>
+                <property name="xalign">0</property>
+                <property name="hexpand">True</property>
+                <style>
+                  <class name="ipmsg-status-label"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="send_button">
+                <property name="label">送信</property>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

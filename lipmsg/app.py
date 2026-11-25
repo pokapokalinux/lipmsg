@@ -27,9 +27,9 @@ from ipmsg_core import (
     NodeConfig,
     PeerInfo,
 )
-from ui_gtk4.receive_window import ReceiveWindow
-from ui_gtk4.send_window import SendWindow
-from ui_gtk4.settings_window import AppSettings, SettingsWindow
+from lipmsg.receive_window import ReceiveWindow
+from lipmsg.send_window import SendWindow
+from lipmsg.settings_window import AppSettings, SettingsWindow
 
 APP_ID = "org.example.IpmsgLinuxGtk4"
 

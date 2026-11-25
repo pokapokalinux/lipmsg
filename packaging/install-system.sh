@@ -115,7 +115,7 @@ rm -rf "${APP_DIR}"
 mkdir -p "${APP_DIR}" "${ICON_DIR}" "${APPS_DIR}"
 
 cp -r "${PROJECT_ROOT}/ipmsg_core" "${APP_DIR}/"
-cp -r "${PROJECT_ROOT}/ui_gtk4" "${APP_DIR}/"
+cp -r "${PROJECT_ROOT}/lipmsg" "${APP_DIR}/"
 
 find "${APP_DIR}" -type d -exec chmod 0755 {} +
 find "${APP_DIR}" -type f -exec chmod 0644 {} +
@@ -125,7 +125,7 @@ cat > "${BIN_PATH}" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
 export PYTHONPATH="${APP_DIR}\${PYTHONPATH:+:\$PYTHONPATH}"
-exec python3 -m ui_gtk4.app "\$@"
+exec python3 -m lipmsg.app "\$@"
 EOF
 chmod 0755 "${BIN_PATH}"
 

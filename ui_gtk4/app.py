@@ -12,7 +12,8 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Gdk", "4.0")
-from gi.repository import Gdk, GLib, Gtk
+gi.require_version("Gio", "2.0")
+from gi.repository import Gdk, Gio, GLib, Gtk
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
@@ -80,9 +81,19 @@ class IpmsgGtk4Application(Gtk.Application):
         self._node: IpmsgNode | None = None
         self._send_window: SendWindow | None = None
         self._open_receive_windows: list[ReceiveWindow] = []
+        self._shutting_down = False
+        self._held = False
 
     def do_startup(self) -> None:
         Gtk.Application.do_startup(self)
+        self.hold()
+        self._held = True
+
+        quit_action = Gio.SimpleAction.new("quit", None)
+        quit_action.connect("activate", self._on_quit_action)
+        self.add_action(quit_action)
+        self.set_accels_for_action("app.quit", ["<Control>q"])
+
         self._load_css()
         self._start_node()
 
@@ -97,14 +108,32 @@ class IpmsgGtk4Application(Gtk.Application):
                 on_open_settings=self._handle_open_settings,
             )
             self._send_window.connect("close-request", self._on_main_window_close)
-            if self._node is not None:
-                self._send_window.update_peers(self._node.get_peers())
-                self._send_window.set_absence_state(self._node.is_absent)
+
+        if self._node is not None:
+            self._send_window.update_peers(self._node.get_peers())
+            self._send_window.set_absence_state(self._node.is_absent)
         self._send_window.present()
 
-    def _on_main_window_close(self, _win: Gtk.Window) -> bool:
+    def _on_main_window_close(self, win: Gtk.Window) -> bool:
+        if self._shutting_down:
+            return False
+        # ×ボタンでは終了せず裏で待ち受けを継続する
+        win.hide()
+        return True
+
+    def _on_quit_action(self, _action: Gio.SimpleAction, _param: object) -> None:
+        self._shutting_down = True
+        for rwin in list(self._open_receive_windows):
+            rwin.destroy()
+        self._open_receive_windows.clear()
+        if self._send_window is not None:
+            self._send_window.destroy()
+            self._send_window = None
         self._shutdown_services()
-        return False
+        if self._held:
+            self._held = False
+            self.release()
+        self.quit()
 
     def _shutdown_services(self) -> None:
         if self._node is not None:
@@ -183,12 +212,8 @@ class IpmsgGtk4Application(Gtk.Application):
         )
 
     def _show_receive_window_ui(self, event: IncomingMessageEvent) -> int:
-        parent = self._send_window
-        if parent is None:
-            return GLib.SOURCE_REMOVE
-
         win = ReceiveWindow(
-            transient_for=parent,
+            transient_for=self._send_window if self._send_window and self._send_window.get_visible() else None,
             event=event,
             on_reply=self._handle_reply_from_receive,
             on_ack_close=self._handle_ack_close_from_receive,
